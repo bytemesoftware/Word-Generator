@@ -17,7 +17,7 @@ public class Application
      *
      * @param letters A String of letters
      */
-    public Application(String letters,String language, LexDict dictionary)
+    public Application(String letters,String language, Dictionary dictionary)
     {
         generator = new WordGenerator(letters,language,dictionary);
     }

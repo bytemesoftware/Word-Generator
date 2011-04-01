@@ -10,10 +10,8 @@ public class WordGenerator
 {
     //the set of words that are the dictionary words
     private ArrayList<String> wordlist = new ArrayList<String>();
-    //the scanner needed to read the file containind the dictionary
-    private java.util.Scanner scanner;
     //the hashtable to store the dictionary words
-    private LexDict dictionary;
+    private Dictionary dictionary;
     //the language for the dictionary
     private String language;
 
@@ -34,7 +32,7 @@ public class WordGenerator
      *          alphabet.
      * @param String
      */
-    public WordGenerator(String letters, String language, LexDict dictionary)
+    public WordGenerator(String letters, String language, Dictionary dictionary)
     {
         //TODO use the parameter for the language to select the right txt file
 
@@ -44,8 +42,6 @@ public class WordGenerator
         this.source = letters.toUpperCase();
         this.dictionary = dictionary;
         initLanguage();
-        //Create dicitonary to compare genertaed words with
-        //createDict();
     }
 
     /**
@@ -55,14 +51,7 @@ public class WordGenerator
      */
     public void generate()
     {
-        //initalize the wild flag to false
-        boolean containsWild = false;
-
-        //check the array for the wildcard
-        if(arrayContains(source.toCharArray(),'?') != -1)
-            containsWild = true;
-
-        if(!containsWild)
+        if(source.indexOf("?") == -1)
             generateNormal();
         else
             generateWild();
@@ -76,23 +65,17 @@ public class WordGenerator
      */
     public String[] getResult()
     {
+        //create the array with the size of the set of words
         String result[] = new String[wordlist.size()];
         
         for(int i = 0; i < wordlist.size(); i++)
-            result[i] = wordlist.get(i); 
-        //create the array with the size of the set of words
+            result[i] = wordlist.get(i);         
+        
         return result;
     }
 
     private void generateNormal()
     {
-        /*
-         * return -1 if word is not found and is not a prefix
-         * return 0 if word is not found but is a prefix
-         * return 1 if word is found and a prefix
-         * return 2 if word is found and not a prefix
-         */
-        
         
         GenThread[] threads = new GenThread[source.length()];
         
@@ -115,44 +98,76 @@ public class WordGenerator
                 System.out.print("Join interrupted\n");
              }
         }
-
-
-        /*for(int i = 0; i < source.length(); i++)
-        {
-            String anchor  = ""+source.charAt(i);
-            String remaining = removeChar(source,i);
-            
-            char[] pool = remaining.toCharArray();
-            
-            generateWords(anchor,pool);
-            
-        }*/
     }
 
     private void generateWild()
     {
-        int wild = arrayContains(source.toCharArray(),'?');
+        int wild = source.indexOf("?");
+        int wild2 = source.lastIndexOf("?");
         GenWildThread[] threads = new GenWildThread[alphabet.length];
+         
+        //two wilds
+        if((wild2 != wild) && (wild != -1)){
+            
+            threads = new GenWildThread[alphabet.length * alphabet.length];
+            
+            System.out.println("found two ");
+            int count = 0;
+            for(int i = 0; i < alphabet.length; i++){
+                
+                for(int j = 0; j < alphabet.length; j++){
+                   
+                    char[] temp = (new String(source)).toCharArray();
+                    temp[wild] = alphabet[i];
+                    temp[wild2] = alphabet[j];
+                    String modifiedSource = new String(temp);
 
-        for(int i = 0; i < threads.length;i++)
-        {
-            char[] temp = (new String(source)).toCharArray();
-            temp[wild] = alphabet[i];
-            String modifiedSource = new String(temp);
+                    threads[count] = new GenWildThread(modifiedSource);
+                    threads[count].start();
+                    count++;
+                }              
+                
+            }
+            
+            for (int i = 0; i < count; i++)
+            {
+                try {
+                    threads[i].join();
+                 }
+                 catch (InterruptedException e) {                     
+                    System.out.print("Join interrupted\n");
+                 }
+            }
+        }
+        else{
+            for(int i = 0; i < threads.length;i++)
+            {
+                char[] temp = (new String(source)).toCharArray();
+                temp[wild] = alphabet[i];
+                String modifiedSource = new String(temp);
 
-            threads[i] = new GenWildThread(modifiedSource);
-            threads[i].start();
+                threads[i] = new GenWildThread(modifiedSource);
+                threads[i].start();
+            }
+            
+            for (int i=0; i < threads.length; i++)
+            {
+                try {
+                    threads[i].join();
+                 }
+                 catch (InterruptedException e) {
+                    System.out.print("Join interrupted\n");
+                 }
+            }
         }
 
-        for (int i=0; i < threads.length; i++)
-        {
-            try {
-                threads[i].join();
-             }
-             catch (InterruptedException e) {
-                System.out.print("Join interrupted\n");
-             }
-        }
+        
+        
+    }
+    
+    private synchronized void addWord(String word){
+        if(!wordlist.contains(word))
+            wordlist.add(word);
     }
 
     private String removeChar(String string, int index)
@@ -169,23 +184,15 @@ public class WordGenerator
 
     private void generateWords(String anchor, char[] pool)
     {
-        /*
-         * return -1 if word is not found and is not a prefix
-         * return 0 if word is not found but is a prefix
-         * return 1 if word is found and a prefix
-         * return 2 if word is found and not a prefix
-         */
-        
         int search = dictionary.lookup(anchor);
         
         //if the anchor is a prefix
-        if(search == LexDict.NOT_WORD_IS_PREFIX || search == LexDict.IS_WORD_IS_PREFIX)
+        if(search == Dictionary.NOT_WORD_IS_PREFIX || search == Dictionary.IS_WORD_IS_PREFIX)
         {
             //add the found word to the wordlist
-            if(search == 1)
+            if(search == Dictionary.IS_WORD_IS_PREFIX)
             {
-                if(!wordlist.contains(anchor))
-                    wordlist.add(anchor);
+                addWord(anchor);
             }
             
                         
@@ -199,30 +206,13 @@ public class WordGenerator
                 generateWords(newAnchor, newpool);
             }
         }
-        
-        //if the anchor is not a prefix
-        if(search == -1 || search == 2)
+        else
         {
             //add the found word to the wordlist
-            if(search == 2){
-                 if(!wordlist.contains(anchor))
-                     wordlist.add(anchor);
+            if(search == Dictionary.IS_WORD_NOT_PREFIX){
+                 addWord(anchor);
             }
-                
-        }
-        
-    }
-
-    /**
-     * Will read a file that contains words for a dictionary then create a
-     * dictionary to compare the generated words to.
-     *
-     * @ensure Will create a dictionay from a text file.
-     */
-    private void createDict()
-    {
-       // dictionary = new LexDict(alphabet,language);
-
+        }        
     }
 
     private void initLanguage()
@@ -238,45 +228,6 @@ public class WordGenerator
         if(language.equals("FRE"))
         {
             alphabet = (new String("ABCDEFGHIJKLMNOPQRSTUVWXYZ")).toCharArray();
-        }
-    }
-
-    /**
-     * Simple method to see if the array contains a certain charcter and return
-     * the index of that character. If the chracter is not found then it will
-     * return -1
-     *
-     * @param word
-     * @param item
-     * @return
-     */
-    private int arrayContains(char[] word, char item)
-    {
-        //TODO: rewite as boolean return type
-
-        //index to return
-        int result = -1;
-
-        //itertes of the array to search for the chracter
-        for(int i = 0; i < word.length; i++)
-        {
-            //if the character is found then set the index
-            if(word[i] == item)
-                result = i;
-        }
-
-        return result;
-    }
-
-    private class comparator implements java.util.Comparator<String>
-    {
-        public comparator()
-        {
-            //left blank
-        }
-        public int compare(String first, String second)
-        {
-            return first.compareTo(second);
         }
     }
 
@@ -314,6 +265,7 @@ public class WordGenerator
             }
         }
     }
+    
     private class GenThread extends Thread
     {
         private String anchor;

@@ -6,11 +6,11 @@ import java.net.*;
 public class WordGeneratorServer implements Runnable
 {
     private int port;
-    private LexDict dictionary;
+    private Dictionary dictionary;
 
     protected WordGeneratorServer( int port )
     {
-        this.dictionary = new LexDict("ENG");
+        this.dictionary = new Dictionary("ENG");
         this.port = port;
         new Thread( this ).start();
     }//end WordGeneratorServer constructor
@@ -102,22 +102,13 @@ public class WordGeneratorServer implements Runnable
             System.out.println(input[i]);
         
         if(!input[1].equals("."))
-        {
-
             result = generator.endsWith(input[1]);
-        }
         else if(!input[2].equals("."))
-        {
             result = generator.beginsWith(input[2]);
-        }
         else if(!input[3].equals("."))
-        {
             result = generator.contains(input[3]);
-        }
         else
-        {
             result = generator.getAnagrams();
-        }
 
         for(int i = 0; i < result.length; i++)
             out += result[i] + ",";

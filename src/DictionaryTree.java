@@ -7,14 +7,14 @@
  *
  * @author daniel
  */
-public class LexTree {
+public class DictionaryTree {
 
     private boolean word;
-    private LexTree children[];
+    private DictionaryTree children[];
     
-    public LexTree(boolean isword){
+    public DictionaryTree(boolean isword){
         word = false;
-        children = new LexTree[26];
+        children = new DictionaryTree[26];
     }
     
     public void add(String word){
@@ -23,7 +23,7 @@ public class LexTree {
             int index = indexOf(word.charAt(0));
             
             if(children[index] == null)
-                children[index] = new LexTree(false);  
+                children[index] = new DictionaryTree(false);  
             
             if(word.length() == 1)
                 children[index].setWord(true);
@@ -35,8 +35,8 @@ public class LexTree {
             
     }//end add
     
-    public LexTree getTree(String word){
-        LexTree result;
+    public DictionaryTree getTree(String word){
+        DictionaryTree result;
         int index = indexOf(word.charAt(0));
         
         if(word.length() > 1){
@@ -44,14 +44,14 @@ public class LexTree {
                 result = children[index].getTree(word.substring(1));
             }
             else
-                result = new LexTree(false);
+                result = new DictionaryTree(false);
         }
         else{
             if(children[index] != null){
                 result = children[index];
             }
             else
-                result = new LexTree(false);
+                result = new DictionaryTree(false);
         }
                 
         

@@ -7,7 +7,7 @@
  *
  * @author daniel
  */
-public class LexDict {
+public class Dictionary {
     
     public static final int NOT_WORD_NOT_PREFIX = -1;
     public static final int NOT_WORD_IS_PREFIX = 0;
@@ -15,7 +15,7 @@ public class LexDict {
     public static final int IS_WORD_IS_PREFIX = 1;
     
 
-    private LexTree dictionary;
+    private DictionaryTree dictionary;
     private char[] alphabet;
     private java.io.File file;
     private String language;
@@ -25,15 +25,13 @@ public class LexDict {
      * @param file The path to the file containing the word list
      * @param letters An array containing the letters in the alphabet
      */
-    public LexDict(String language)
+    public Dictionary(String language)
     {
         this.language = language;
-        dictionary = new LexTree(false);
+        dictionary = new DictionaryTree(false);
         selectDictionary(language);
         initLanguage();
         readFile();
-        
-
     }    
 
     /**
@@ -43,49 +41,39 @@ public class LexDict {
      */
     public int lookup(String word)
     {
-        int result = LexDict.NOT_WORD_NOT_PREFIX;
+        int result = Dictionary.NOT_WORD_NOT_PREFIX;
 
-        LexTree tree = dictionary.getTree(word);
+        DictionaryTree tree = dictionary.getTree(word);
         
         if(tree.isWord() && tree.hasChildren())
-            result = LexDict.IS_WORD_IS_PREFIX;
+            result = Dictionary.IS_WORD_IS_PREFIX;
         
         else if(tree.isWord() && !tree.hasChildren())
-            result = LexDict.IS_WORD_NOT_PREFIX;
+            result = Dictionary.IS_WORD_NOT_PREFIX;
         
         else if(!tree.isWord() && !tree.hasChildren())
-            result = LexDict.NOT_WORD_NOT_PREFIX;
+            result = Dictionary.NOT_WORD_NOT_PREFIX;
         
         else
-            result = LexDict.NOT_WORD_IS_PREFIX;
+            result = Dictionary.NOT_WORD_IS_PREFIX;
         
         return result;
     }
 
     private void readFile()
     {
-        try
-        {
+        try{
             java.util.Scanner scanner = new java.util.Scanner(file);
 
-
-            while(scanner.hasNext())
-            {
+            while(scanner.hasNext()){
                 String temp = scanner.next();
                 temp = temp.toUpperCase();
                 dictionary.add(temp);
             }
-
-
         }
-
-        catch(java.io.FileNotFoundException e)
-        {
+        catch(java.io.FileNotFoundException e){
             System.out.println("Could not open file");
         }
-        //System.out.println(dictionary[0].toString());
-
-
     }
     
     private void initLanguage()
