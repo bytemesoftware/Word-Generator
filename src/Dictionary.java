@@ -19,14 +19,16 @@ public class Dictionary {
     private char[] alphabet;
     private java.io.File file;
     private String language;
+    private String filePath;
 
     /**
      *
      * @param file The path to the file containing the word list
      * @param letters An array containing the letters in the alphabet
      */
-    public Dictionary(String language)
+    public Dictionary(String language, String filePath)
     {
+        this.filePath = filePath;
         this.language = language;
         dictionary = new DictionaryTree(false);
         selectDictionary(language);
@@ -96,7 +98,7 @@ public class Dictionary {
     {
         if(filepath.equals("ENG"))
         {
-            file = new java.io.File("eng_dict.txt");
+            file = new java.io.File(this.filePath);
         }
         if(filepath.equals("GER"))
         {

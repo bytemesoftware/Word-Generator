@@ -1,3 +1,5 @@
+import java.util.ArrayList;
+
 /*
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
@@ -13,7 +15,7 @@ public class DictionaryTree {
     private DictionaryTree children[];
     
     public DictionaryTree(boolean isword){
-        word = false;
+        word = false; 
         children = new DictionaryTree[26];
     }
     
@@ -38,7 +40,7 @@ public class DictionaryTree {
     public DictionaryTree getTree(String word){
         DictionaryTree result;
         int index = indexOf(word.charAt(0));
-        
+                  
         if(word.length() > 1){
             if(children[index] != null){
                 result = children[index].getTree(word.substring(1));

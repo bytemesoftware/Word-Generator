@@ -8,9 +8,9 @@ public class WordGeneratorServer implements Runnable
     private int port;
     private Dictionary dictionary;
 
-    protected WordGeneratorServer( int port )
+    protected WordGeneratorServer( int port , String wordFile)
     {
-        this.dictionary = new Dictionary("ENG");
+        this.dictionary = new Dictionary("ENG", wordFile);
         this.port = port;
         new Thread( this ).start();
     }//end WordGeneratorServer constructor
@@ -119,6 +119,6 @@ public class WordGeneratorServer implements Runnable
 
     static public void main( String args[] ) throws Exception 
     {
-        new WordGeneratorServer( 4000 );
+        new WordGeneratorServer( 4000 , args[0]);
     }
 }
